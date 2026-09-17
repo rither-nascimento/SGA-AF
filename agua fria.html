@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SGA - Rateio de Água Fria</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:6px;background:#eef2f5;font-family:Arial,Helvetica,sans-serif;color:#263238;font-size:13px}
+.container{width:100%;max-width:650px;margin:auto}
+.cabecalho{text-align:center;padding:7px 3px 9px}
+.cabecalho h1{margin:0;color:#1565c0;font-size:20px}
+.cabecalho p{margin:3px 0 0;color:#78909c;font-size:10px}
+.card{background:#fff;border-radius:8px;padding:10px;margin-bottom:7px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.campo{margin-bottom:9px}
+.campo:last-child{margin-bottom:0}
+label{display:block;font-weight:bold;font-size:13px;margin-bottom:4px;color:#37474f}
+input{width:100%;height:38px;padding:7px 10px;border:1px solid #b0bec5;border-radius:6px;font-size:16px;color:#263238;background:#fafafa}
+input::placeholder{color:#9e9e9e;font-size:13px}
+input:focus{outline:0;border-color:#1565c0;background:#fff;box-shadow:0 0 0 2px rgba(21,101,192,.1)}
+.input-pendente{border-color:#ffb300;background:#fffde7}
+.aviso{display:none;margin-top:7px;padding:7px;background:#fff8e1;border-left:3px solid #ffb300;border-radius:3px;font-size:9px;color:#6d4c41;line-height:1.35}
+.erro{display:none;margin-bottom:7px;padding:8px;background:#ffebee;border:1px solid #ef5350;border-radius:6px;color:#b71c1c;font-size:11px;font-weight:bold;text-align:center}
+.botoes{display:flex;gap:7px;margin-top:10px}
+button{border:0;border-radius:6px;height:38px;font-size:14px;font-weight:bold;cursor:pointer}
+.btn-calcular{flex:1;background:#1565c0;color:#fff}
+.btn-calcular:hover{background:#0d47a1}
+.btn-relatorio{width:52px;background:#eceff1;color:#455a64;font-size:18px}
+.titulo{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.titulo h2{margin:0;font-size:16px;color:#1565c0}
+.memoria{width:100%;border-collapse:collapse;font-size:11px}
+.memoria th{background:#1565c0;color:#fff;padding:5px 4px;text-align:left;font-size:10px}
+.memoria th:last-child{text-align:right}
+.memoria td{padding:5px 4px;border-bottom:1px solid #eceff1;vertical-align:middle}
+.memoria td:first-child{width:24px;color:#1565c0;font-weight:bold;text-align:center}
+.memoria td:last-child{text-align:right;font-weight:bold;white-space:nowrap}
+.formula{display:block;color:#90a4ae;font-size:8px;margin-top:2px;font-weight:normal;line-height:1.2}
+.resultado{margin-top:9px;padding:9px;background:#e8f5e9;border:2px solid #43a047;border-radius:8px;text-align:center}
+.resultado-label{color:#2e7d32;font-size:11px;font-weight:bold}
+.resultado-valor{color:#1b5e20;font-size:26px;font-weight:bold;margin-top:2px}
+.resultado-desc{color:#388e3c;font-size:9px;margin-top:2px}
+.tabela{width:100%;border-collapse:collapse;font-size:9px;margin-top:5px}
+.tabela th{background:#1565c0;color:#fff;padding:4px 3px;text-align:center}
+.tabela td{padding:4px 3px;border-bottom:1px solid #eceff1;text-align:center}
+.tabela td:first-child{text-align:left;font-weight:bold}
+.tabela tfoot td{background:#e3f2fd;color:#1565c0;font-weight:bold;border-top:2px solid #1565c0}
+.observacao{margin-top:7px;padding:7px;background:#fff8e1;border-left:3px solid #ffb300;border-radius:3px;font-size:9px;color:#5d4037;line-height:1.35}
+.rodape{text-align:center;color:#90a4ae;font-size:8px;line-height:1.5;padding:5px 3px 8px}
+.rodape strong{color:#607d8b}
+@media(min-width:481px){
+body{padding:15px;font-size:14px}
+.card{padding:14px}
+.cabecalho h1{font-size:24px}
+.memoria{font-size:13px}
+.memoria th{font-size:12px}
+.tabela{font-size:10px}
+.formula{font-size:9px}
+.rodape{font-size:9px}
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<div class="cabecalho">
+<h1>SGA - Rateio de Água Fria</h1>
+<p>Memória de cálculo do consumo da unidade</p>
+</div>
+
+<div id="erro" class="erro"></div>
+
+<div class="card">
+
+<div class="campo">
+<label for="consumoUnidade">1. Consumo m³ da unidade</label>
+<input type="number" id="consumoUnidade" placeholder="Informe o consumo da unidade" step="0.01" min="0">
+</div>
+
+<div class="campo">
+<label for="consumoCondominio">3. Consumo m³ medido do condomínio</label>
+<input type="number" id="consumoCondominio" placeholder="Informe o consumo do condomínio" step="0.01" min="0">
+</div>
+
+<div class="campo">
+<label for="totalRateado">4. Total a ser rateado</label>
+<input type="number" id="totalRateado" placeholder="Pode ser positivo ou negativo" step="0.01">
+</div>
+
+<div class="botoes">
+<button class="btn-calcular" id="btnCalcular" onclick="calcular()">CALCULAR</button>
+<button class="btn-relatorio" onclick="gerarRelatorio()" title="Gerar relatório">🖨</button>
+</div>
+
+<div id="aviso" class="aviso">
+Os valores foram alterados. Clique em <strong>ATUALIZAR CÁLCULO</strong> para atualizar a memória.
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="titulo">
+<h2>Memória de Cálculo</h2>
+</div>
+
+<table class="memoria">
+
+<thead>
+<tr>
+<th>#</th>
+<th>Cálculo</th>
+<th>Valor</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr>
+<td>1</td>
+<td>Consumo m³ da unidade</td>
+<td id="r1">—</td>
+</tr>
+
+<tr>
+<td>2</td>
+<td>
+Custo do consumo
+<span class="formula" id="f2">Aguardando cálculo</span>
+</td>
+<td id="r2">—</td>
+</tr>
+
+<tr>
+<td>3</td>
+<td>Consumo m³ medido do condomínio</td>
+<td id="r3">—</td>
+</tr>
+
+<tr>
+<td>4</td>
+<td>Total a ser rateado</td>
+<td id="r4">—</td>
+</tr>
+
+<tr>
+<td>5</td>
+<td>
+Valor Ajuste Rateado para unidade
+<span class="formula" id="f5">Aguardando cálculo</span>
+</td>
+<td id="r5">—</td>
+</tr>
+
+<tr>
+<td>6</td>
+<td>
+Valor da conta final
+<span class="formula" id="f6">Aguardando cálculo</span>
+</td>
+<td id="r6">—</td>
+</tr>
+
+</tbody>
+</table>
+
+<div class="resultado">
+<div class="resultado-label">6. VALOR DA CONTA FINAL</div>
+<div class="resultado-valor" id="resultadoFinal">—</div>
+<div class="resultado-desc">Custo do Consumo + Valor Ajuste Rateado</div>
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="titulo">
+<h2>Memória do Custo do Consumo: <span id="tituloConsumo">—</span></h2>
+</div>
+
+<table class="tabela">
+
+<thead>
+<tr>
+<th>Faixa Consumo</th>
+<th>Água<br>R$/m³</th>
+<th>Esgoto<br>R$/m³</th>
+<th>Consumo<br>m³</th>
+<th>Água<br>R$</th>
+<th>Esgoto<br>R$</th>
+<th>Somatória<br>R$</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr>
+<td>Até 10m³</td>
+<td>4,042</td>
+<td>4,042</td>
+<td id="faixa1">0,00</td>
+<td id="agua1">R$ 0,00</td>
+<td id="esgoto1">R$ 0,00</td>
+<td id="soma1">R$ 0,00</td>
+</tr>
+
+<tr>
+<td>11 a 20m³</td>
+<td>6,40</td>
+<td>6,40</td>
+<td id="faixa2">0,00</td>
+<td id="agua2">R$ 0,00</td>
+<td id="esgoto2">R$ 0,00</td>
+<td id="soma2">R$ 0,00</td>
+</tr>
+
+<tr>
+<td>21 a 50m³</td>
+<td>15,95</td>
+<td>15,95</td>
+<td id="faixa3">0,00</td>
+<td id="agua3">R$ 0,00</td>
+<td id="esgoto3">R$ 0,00</td>
+<td id="soma3">R$ 0,00</td>
+</tr>
+
+<tr>
+<td>Acima 50m³</td>
+<td>17,57</td>
+<td>17,57</td>
+<td id="faixa4">0,00</td>
+<td id="agua4">R$ 0,00</td>
+<td id="esgoto4">R$ 0,00</td>
+<td id="soma4">R$ 0,00</td>
+</tr>
+
+</tbody>
+
+<tfoot>
+<tr>
+<td colspan="3">TOTAL</td>
+<td id="totalConsumoTabela">0,00</td>
+<td id="totalAgua">R$ 0,00</td>
+<td id="totalEsgoto">R$ 0,00</td>
+<td id="totalTabela">R$ 0,00</td>
+</tr>
+</tfoot>
+
+</table>
+
+<div class="observacao">
+<strong>Critério:</strong>
+O consumo informado no item 1 é distribuído progressivamente entre as faixas. O valor de cada faixa é calculado separadamente para água e esgoto. A soma das faixas determina o valor do item 2.
+</div>
+
+</div>
+
+<div class="rodape">
+SGA - Sistema de Rateio de Água Fria<br>
+<strong>Criado por Rither Nascimento</strong>
+</div>
+
+</div>
+
+<script>
+
+/* ==================================================
+   TARIFAS
+   ================================================== */
+
+const TARIFA_AGUA_1=4.042;
+const TARIFA_ESGOTO_1=4.042;
+
+const TARIFA_AGUA_2=6.40;
+const TARIFA_ESGOTO_2=6.40;
+
+const TARIFA_AGUA_3=15.95;
+const TARIFA_ESGOTO_3=15.95;
+
+const TARIFA_AGUA_4=17.57;
+const TARIFA_ESGOTO_4=17.57;
+
+/* ==================================================
+   FORMATAÇÃO
+   ================================================== */
+
+function dinheiro(v){
+return v.toLocaleString('pt-BR',{
+style:'currency',
+currency:'BRL'
+});
+}
+
+function numero(v){
+return v.toLocaleString('pt-BR',{
+minimumFractionDigits:2,
+maximumFractionDigits:2
+});
+}
+
+/* ==================================================
+   LIMPAR TABELA
+   ================================================== */
+
+function limparTabela(){
+
+for(let i=1;i<=4;i++){
+
+document.getElementById('faixa'+i).innerText='0,00';
+
+document.getElementById('agua'+i).innerText='R$ 0,00';
+
+document.getElementById('esgoto'+i).innerText='R$ 0,00';
+
+document.getElementById('soma'+i).innerText='R$ 0,00';
+
+}
+
+document.getElementById('totalConsumoTabela').innerText='0,00';
+
+document.getElementById('totalAgua').innerText='R$ 0,00';
+
+document.getElementById('totalEsgoto').innerText='R$ 0,00';
+
+document.getElementById('totalTabela').innerText='R$ 0,00';
+
+}
+
+/* ==================================================
+   CALCULO DAS FAIXAS
+   ================================================== */
+
+function calcularTabela(consumo){
+
+let restante=consumo;
+let totalAgua=0;
+let totalEsgoto=0;
+
+const tarifas=[
+{
+limite:10,
+agua:TARIFA_AGUA_1,
+esgoto:TARIFA_ESGOTO_1
+},
+{
+limite:10,
+agua:TARIFA_AGUA_2,
+esgoto:TARIFA_ESGOTO_2
+},
+{
+limite:30,
+agua:TARIFA_AGUA_3,
+esgoto:TARIFA_ESGOTO_3
+},
+{
+limite:Infinity,
+agua:TARIFA_AGUA_4,
+esgoto:TARIFA_ESGOTO_4
+}
+];
+
+for(let i=0;i<4;i++){
+
+let consumoFaixa=0;
+
+if(restante>0){
+consumoFaixa=Math.min(restante,tarifas[i].limite);
+}
+
+let valorAgua=consumoFaixa*tarifas[i].agua;
+let valorEsgoto=consumoFaixa*tarifas[i].esgoto;
+let soma=valorAgua+valorEsgoto;
+
+document.getElementById('faixa'+(i+1)).innerText=
+numero(consumoFaixa);
+
+document.getElementById('agua'+(i+1)).innerText=
+dinheiro(valorAgua);
+
+document.getElementById('esgoto'+(i+1)).innerText=
+dinheiro(valorEsgoto);
+
+document.getElementById('soma'+(i+1)).innerText=
+dinheiro(soma);
+
+totalAgua+=valorAgua;
+totalEsgoto+=valorEsgoto;
+
+restante-=consumoFaixa;
+
+}
+
+const total=totalAgua+totalEsgoto;
+
+document.getElementById('totalConsumoTabela').innerText=
+numero(consumo);
+
+document.getElementById('totalAgua').innerText=
+dinheiro(totalAgua);
+
+document.getElementById('totalEsgoto').innerText=
+dinheiro(totalEsgoto);
+
+document.getElementById('totalTabela').innerText=
+dinheiro(total);
+
+return{
+total:total,
+agua:totalAgua,
+esgoto:totalEsgoto
+};
+
+}
+
+/* ==================================================
+   LIMPAR RESULTADOS
+   ================================================== */
+
+function limpar(){
+
+[
+'r1',
+'r2',
+'r3',
+'r4',
+'r5',
+'r6',
+'resultadoFinal'
+].forEach(id=>{
+document.getElementById(id).innerText='—';
+});
+
+[
+'f2',
+'f5',
+'f6'
+].forEach(id=>{
+document.getElementById(id).innerText='Aguardando cálculo';
+});
+
+document.getElementById('tituloConsumo').innerText='—';
+
+limparTabela();
+
+}
+
+/* ==================================================
+   ALTERAÇÃO DOS CAMPOS
+   ================================================== */
+
+function marcarAlteracao(){
+
+document.getElementById('consumoUnidade')
+.classList.add('input-pendente');
+
+document.getElementById('consumoCondominio')
+.classList.add('input-pendente');
+
+document.getElementById('totalRateado')
+.classList.add('input-pendente');
+
+document.getElementById('aviso').style.display='block';
+
+document.getElementById('btnCalcular').innerText=
+'ATUALIZAR CÁLCULO';
+
+}
+
+/* ==================================================
+   REMOVER AVISO
+   ================================================== */
+
+function removerAviso(){
+
+document.getElementById('consumoUnidade')
+.classList.remove('input-pendente');
+
+document.getElementById('consumoCondominio')
+.classList.remove('input-pendente');
+
+document.getElementById('totalRateado')
+.classList.remove('input-pendente');
+
+document.getElementById('aviso').style.display='none';
+
+document.getElementById('btnCalcular').innerText=
+'ATUALIZAR CÁLCULO';
+
+}
+
+/* ==================================================
+   CALCULO PRINCIPAL
+   ================================================== */
+
+function calcular(){
+
+const campo1=
+document.getElementById('consumoUnidade').value;
+
+const campo3=
+document.getElementById('consumoCondominio').value;
+
+const campo4=
+document.getElementById('totalRateado').value;
+
+const erro=
+document.getElementById('erro');
+
+erro.style.display='none';
+
+if(
+campo1===''||
+campo3===''||
+campo4===''
+){
+
+alert('Preencha os três campos antes de calcular.');
+
+return;
+
+}
+
+const consumoUnidade=
+parseFloat(campo1);
+
+const consumoCondominio=
+parseFloat(campo3);
+
+const totalRateado=
+parseFloat(campo4);
+
+if(
+isNaN(consumoUnidade)||
+isNaN(consumoCondominio)||
+isNaN(totalRateado)||
+consumoUnidade<0||
+consumoCondominio<=0
+){
+
+erro.style.display='block';
+
+erro.innerText=
+'Verifique os valores informados. O consumo do condomínio deve ser maior que zero.';
+
+limpar();
+
+return;
+
+}
+
+/* TITULO DA TABELA */
+
+document.getElementById('tituloConsumo').innerText=
+numero(consumoUnidade)+' m³';
+
+/* ITEM 2 */
+
+const tabela=
+calcularTabela(consumoUnidade);
+
+const custoConsumo=
+tabela.total;
+
+/* ITEM 5 */
+
+const ajuste=
+(consumoUnidade/consumoCondominio)*totalRateado;
+
+/* ITEM 6 */
+
+const valorFinal=
+custoConsumo+ajuste;
+
+/* RESULTADOS */
+
+document.getElementById('r1').innerText=
+numero(consumoUnidade)+' m³';
+
+document.getElementById('r2').innerText=
+dinheiro(custoConsumo);
+
+document.getElementById('f2').innerText=
+'Água '+dinheiro(tabela.agua)+
+' + Esgoto '+dinheiro(tabela.esgoto);
+
+document.getElementById('r3').innerText=
+numero(consumoCondominio)+' m³';
+
+document.getElementById('r4').innerText=
+dinheiro(totalRateado);
+
+document.getElementById('r5').innerText=
+dinheiro(ajuste);
+
+document.getElementById('f5').innerText=
+numero(consumoUnidade)+
+' ÷ '+
+numero(consumoCondominio)+
+' × '+
+dinheiro(totalRateado);
+
+document.getElementById('r6').innerText=
+dinheiro(valorFinal);
+
+document.getElementById('f6').innerText=
+dinheiro(custoConsumo)+
+' + '+
+dinheiro(ajuste);
+
+document.getElementById('resultadoFinal').innerText=
+dinheiro(valorFinal);
+
+removerAviso();
+
+}
+
+/* ==================================================
+   RELATORIO
+   ================================================== */
+
+function gerarRelatorio(){
+
+if(
+document.getElementById('r6').innerText==='—'
+){
+
+alert('Faça o cálculo antes de gerar o relatório.');
+
+return;
+
+}
+
+const dados={
+
+r1:document.getElementById('r1').innerText,
+r2:document.getElementById('r2').innerText,
+r3:document.getElementById('r3').innerText,
+r4:document.getElementById('r4').innerText,
+r5:document.getElementById('r5').innerText,
+r6:document.getElementById('r6').innerText,
+
+f2:document.getElementById('f2').innerText,
+f5:document.getElementById('f5').innerText,
+f6:document.getElementById('f6').innerText,
+
+tituloConsumo:
+document.getElementById('tituloConsumo').innerText,
+
+faixa1:document.getElementById('faixa1').innerText,
+faixa2:document.getElementById('faixa2').innerText,
+faixa3:document.getElementById('faixa3').innerText,
+faixa4:document.getElementById('faixa4').innerText,
+
+agua1:document.getElementById('agua1').innerText,
+agua2:document.getElementById('agua2').innerText,
+agua3:document.getElementById('agua3').innerText,
+agua4:document.getElementById('agua4').innerText,
+
+esgoto1:document.getElementById('esgoto1').innerText,
+esgoto2:document.getElementById('esgoto2').innerText,
+esgoto3:document.getElementById('esgoto3').innerText,
+esgoto4:document.getElementById('esgoto4').innerText,
+
+soma1:document.getElementById('soma1').innerText,
+soma2:document.getElementById('soma2').innerText,
+soma3:document.getElementById('soma3').innerText,
+soma4:document.getElementById('soma4').innerText,
+
+totalConsumo:
+document.getElementById('totalConsumoTabela').innerText,
+
+totalAgua:
+document.getElementById('totalAgua').innerText,
+
+totalEsgoto:
+document.getElementById('totalEsgoto').innerText,
+
+totalTabela:
+document.getElementById('totalTabela').innerText
+
+};
+
+const janela=
+window.open('','_blank');
+
+if(!janela){
+
+alert(
+'O navegador bloqueou a abertura do relatório. Permita pop-ups para este site.'
+);
+
+return;
+
+}
+
+janela.document.write(`
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Relatório - SGA Água Fria</title>
+
+<style>
+
+*{box-sizing:border-box}
+
+body{
+margin:0;
+padding:20px;
+background:#f5f5f5;
+font-family:Arial,Helvetica,sans-serif;
+color:#263238
+}
+
+.relatorio{
+max-width:850px;
+margin:auto;
+background:#fff;
+padding:25px;
+border-radius:8px
+}
+
+h1{
+text-align:center;
+color:#1565c0;
+margin:0 0 5px;
+font-size:24px
+}
+
+.sub{
+text-align:center;
+color:#78909c;
+font-size:12px;
+margin-bottom:20px
+}
+
+.data{
+text-align:right;
+color:#78909c;
+font-size:10px;
+margin-bottom:10px
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+font-size:12px
+}
+
+th{
+background:#1565c0;
+color:#fff;
+padding:7px;
+text-align:left
+}
+
+th:last-child{
+text-align:right
+}
+
+td{
+padding:7px;
+border-bottom:1px solid #e0e0e0
+}
+
+td:first-child{
+width:35px;
+text-align:center;
+color:#1565c0;
+font-weight:bold
+}
+
+td:last-child{
+text-align:right;
+font-weight:bold;
+white-space:nowrap
+}
+
+.formula{
+display:block;
+color:#78909c;
+font-size:9px;
+margin-top:2px
+}
+
+.resultado{
+margin-top:18px;
+padding:14px;
+text-align:center;
+background:#e8f5e9;
+border:2px solid #43a047;
+border-radius:8px
+}
+
+.rt{
+color:#2e7d32;
+font-size:14px;
+font-weight:bold
+}
+
+.valor{
+color:#1b5e20;
+font-size:30px;
+font-weight:bold;
+margin-top:5px
+}
+
+.tituloTabela{
+color:#1565c0;
+font-size:18px;
+margin-top:25px
+}
+
+.tabela{
+margin-top:8px
+}
+
+.tabela th,
+.tabela td{
+text-align:center
+}
+
+.tabela td:first-child{
+text-align:left
+}
+
+.tabela tfoot td{
+background:#e3f2fd;
+color:#1565c0;
+font-weight:bold
+}
+
+.criterio{
+margin-top:15px;
+padding:10px;
+background:#fff8e1;
+border-left:4px solid #ffb300;
+font-size:11px;
+line-height:1.5
+}
+
+.acoes{
+text-align:center;
+margin:20px 0
+}
+
+button{
+border:0;
+border-radius:6px;
+padding:10px 18px;
+background:#1565c0;
+color:#fff;
+font-size:14px;
+font-weight:bold;
+cursor:pointer
+}
+
+.rodape{
+margin-top:25px;
+padding-top:10px;
+border-top:1px solid #e0e0e0;
+text-align:center;
+color:#78909c;
+font-size:10px;
+line-height:1.5
+}
+
+@media print{
+
+@page{
+size:A4;
+margin:12mm
+}
+
+body{
+padding:0;
+background:#fff
+}
+
+.relatorio{
+max-width:100%;
+padding:0
+}
+
+.acoes{
+display:none
+}
+
+table{
+font-size:11px
+}
+
+.resultado{
+break-inside:avoid
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="relatorio">
+
+<h1>SGA - Rateio de Água Fria</h1>
+
+<div class="sub">
+Memória de cálculo do consumo da unidade
+</div>
+
+<div class="data">
+Relatório gerado em: ${new Date().toLocaleString('pt-BR')}
+</div>
+
+<div class="acoes">
+<button onclick="window.print()">
+🖨 IMPRIMIR / SALVAR PDF
+</button>
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+<th>#</th>
+<th>Cálculo</th>
+<th>Valor</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+<td>1</td>
+<td>Consumo m³ da unidade</td>
+<td>${dados.r1}</td>
+</tr>
+
+<tr>
+<td>2</td>
+<td>
+Custo do consumo
+<span class="formula">${dados.f2}</span>
+</td>
+<td>${dados.r2}</td>
+</tr>
+
+<tr>
+<td>3</td>
+<td>Consumo m³ medido do condomínio</td>
+<td>${dados.r3}</td>
+</tr>
+
+<tr>
+<td>4</td>
+<td>Total a ser rateado</td>
+<td>${dados.r4}</td>
+</tr>
+
+<tr>
+<td>5</td>
+<td>
+Valor Ajuste Rateado para unidade
+<span class="formula">${dados.f5}</span>
+</td>
+<td>${dados.r5}</td>
+</tr>
+
+<tr>
+<td>6</td>
+<td>
+Valor da conta final
+<span class="formula">${dados.f6}</span>
+</td>
+<td>${dados.r6}</td>
+</tr>
+
+</tbody>
+
+</table>
+
+<div class="resultado">
+
+<div class="rt">
+6. VALOR DA CONTA FINAL
+</div>
+
+<div class="valor">
+${dados.r6}
+</div>
+
+</div>
+
+<h2 class="tituloTabela">
+Memória do Custo do Consumo: ${dados.tituloConsumo}
+</h2>
+
+<table class="tabela">
+
+<thead>
+
+<tr>
+
+<th>Faixa</th>
+<th>Água R$/m³</th>
+<th>Esgoto R$/m³</th>
+<th>Consumo m³</th>
+<th>Água R$</th>
+<th>Esgoto R$</th>
+<th>Somatória R$</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+<td>Até 10m³</td>
+<td>4,042</td>
+<td>4,042</td>
+<td>${dados.faixa1}</td>
+<td>${dados.agua1}</td>
+<td>${dados.esgoto1}</td>
+<td>${dados.soma1}</td>
+</tr>
+
+<tr>
+<td>11 a 20m³</td>
+<td>6,40</td>
+<td>6,40</td>
+<td>${dados.faixa2}</td>
+<td>${dados.agua2}</td>
+<td>${dados.esgoto2}</td>
+<td>${dados.soma2}</td>
+</tr>
+
+<tr>
+<td>21 a 50m³</td>
+<td>15,95</td>
+<td>15,95</td>
+<td>${dados.faixa3}</td>
+<td>${dados.agua3}</td>
+<td>${dados.esgoto3}</td>
+<td>${dados.soma3}</td>
+</tr>
+
+<tr>
+<td>Acima 50m³</td>
+<td>17,57</td>
+<td>17,57</td>
+<td>${dados.faixa4}</td>
+<td>${dados.agua4}</td>
+<td>${dados.esgoto4}</td>
+<td>${dados.soma4}</td>
+</tr>
+
+</tbody>
+
+<tfoot>
+
+<tr>
+<td colspan="3">TOTAL</td>
+<td>${dados.totalConsumo}</td>
+<td>${dados.totalAgua}</td>
+<td>${dados.totalEsgoto}</td>
+<td>${dados.totalTabela}</td>
+</tr>
+
+</tfoot>
+
+</table>
+
+<div class="criterio">
+
+<strong>Critério:</strong>
+
+O consumo informado no item 1 é distribuído progressivamente entre as faixas. O valor de cada faixa é calculado separadamente para água e esgoto. A soma das faixas determina o valor do item 2.
+
+</div>
+
+<div class="rodape">
+
+SGA - Sistema de Rateio de Água Fria<br>
+
+<strong>Criado por Rither Nascimento</strong>
+
+</div>
+
+</div>
+
+</body>
+
+</html>
+
+`);
+
+janela.document.close();
+
+}
+
+/* ==================================================
+   EVENTOS
+   ================================================== */
+
+document.getElementById('consumoUnidade')
+.addEventListener('input',marcarAlteracao);
+
+document.getElementById('consumoCondominio')
+.addEventListener('input',marcarAlteracao);
+
+document.getElementById('totalRateado')
+.addEventListener('input',marcarAlteracao);
+
+limpar();
+
+</script>
+
+</body>
+</html>
+```
