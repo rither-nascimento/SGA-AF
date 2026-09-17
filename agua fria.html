@@ -5,60 +5,328 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SGA - Rateio de Água Fria</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;padding:6px;background:#eef2f5;font-family:Arial,Helvetica,sans-serif;color:#263238;font-size:13px}
-.container{width:100%;max-width:650px;margin:auto}
-.cabecalho{text-align:center;padding:7px 3px 9px}
-.cabecalho h1{margin:0;color:#1565c0;font-size:20px}
-.cabecalho p{margin:3px 0 0;color:#78909c;font-size:10px}
-.card{background:#fff;border-radius:8px;padding:10px;margin-bottom:7px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
-.campo{margin-bottom:9px}
-.campo:last-child{margin-bottom:0}
-label{display:block;font-weight:bold;font-size:13px;margin-bottom:4px;color:#37474f}
-input{width:100%;height:38px;padding:7px 10px;border:1px solid #b0bec5;border-radius:6px;font-size:16px;color:#263238;background:#fafafa}
-input::placeholder{color:#9e9e9e;font-size:13px}
-input:focus{outline:0;border-color:#1565c0;background:#fff;box-shadow:0 0 0 2px rgba(21,101,192,.1)}
-.input-pendente{border-color:#ffb300;background:#fffde7}
-.aviso{display:none;margin-top:7px;padding:7px;background:#fff8e1;border-left:3px solid #ffb300;border-radius:3px;font-size:9px;color:#6d4c41;line-height:1.35}
-.erro{display:none;margin-bottom:7px;padding:8px;background:#ffebee;border:1px solid #ef5350;border-radius:6px;color:#b71c1c;font-size:11px;font-weight:bold;text-align:center}
-.botoes{display:flex;gap:7px;margin-top:10px}
-button{border:0;border-radius:6px;height:38px;font-size:14px;font-weight:bold;cursor:pointer}
-.btn-calcular{flex:1;background:#1565c0;color:#fff}
-.btn-calcular:hover{background:#0d47a1}
-.btn-relatorio{width:52px;background:#eceff1;color:#455a64;font-size:18px}
-.titulo{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
-.titulo h2{margin:0;font-size:16px;color:#1565c0}
-.memoria{width:100%;border-collapse:collapse;font-size:11px}
-.memoria th{background:#1565c0;color:#fff;padding:5px 4px;text-align:left;font-size:10px}
-.memoria th:last-child{text-align:right}
-.memoria td{padding:5px 4px;border-bottom:1px solid #eceff1;vertical-align:middle}
-.memoria td:first-child{width:24px;color:#1565c0;font-weight:bold;text-align:center}
-.memoria td:last-child{text-align:right;font-weight:bold;white-space:nowrap}
-.formula{display:block;color:#90a4ae;font-size:8px;margin-top:2px;font-weight:normal;line-height:1.2}
-.resultado{margin-top:9px;padding:9px;background:#e8f5e9;border:2px solid #43a047;border-radius:8px;text-align:center}
-.resultado-label{color:#2e7d32;font-size:11px;font-weight:bold}
-.resultado-valor{color:#1b5e20;font-size:26px;font-weight:bold;margin-top:2px}
-.resultado-desc{color:#388e3c;font-size:9px;margin-top:2px}
-.tabela{width:100%;border-collapse:collapse;font-size:9px;margin-top:5px}
-.tabela th{background:#1565c0;color:#fff;padding:4px 3px;text-align:center}
-.tabela td{padding:4px 3px;border-bottom:1px solid #eceff1;text-align:center}
-.tabela td:first-child{text-align:left;font-weight:bold}
-.tabela tfoot td{background:#e3f2fd;color:#1565c0;font-weight:bold;border-top:2px solid #1565c0}
-.observacao{margin-top:7px;padding:7px;background:#fff8e1;border-left:3px solid #ffb300;border-radius:3px;font-size:9px;color:#5d4037;line-height:1.35}
-.rodape{text-align:center;color:#90a4ae;font-size:8px;line-height:1.5;padding:5px 3px 8px}
-.rodape strong{color:#607d8b}
-@media(min-width:481px){
-body{padding:15px;font-size:14px}
-.card{padding:14px}
-.cabecalho h1{font-size:24px}
-.memoria{font-size:13px}
-.memoria th{font-size:12px}
-.tabela{font-size:10px}
-.formula{font-size:9px}
-.rodape{font-size:9px}
-}
-</style>
-</head>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        padding: 6px;
+        background: #eef2f5;
+        font-family: Arial, Helvetica, sans-serif;
+        color: #263238;
+        font-size: 13px;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 650px;
+        margin: auto;
+    }
+
+    .cabecalho {
+        text-align: center;
+        padding: 7px 3px 9px;
+    }
+
+    .cabecalho h1 {
+        margin: 0;
+        color: #1565c0;
+        font-size: 20px;
+    }
+
+    .cabecalho p {
+        margin: 3px 0 0;
+        color: #78909c;
+        font-size: 10px;
+    }
+
+    .card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 10px;
+        margin-bottom: 7px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+    }
+
+    .campo {
+        margin-bottom: 9px;
+    }
+
+    .campo:last-child {
+        margin-bottom: 0;
+    }
+
+    label {
+        display: block;
+        font-weight: bold;
+        font-size: 13px;
+        margin-bottom: 4px;
+        color: #37474f;
+    }
+
+    input {
+        width: 100%;
+        height: 38px;
+        padding: 7px 10px;
+        border: 1px solid #b0bec5;
+        border-radius: 6px;
+        font-size: 16px;
+        color: #263238;
+        background: #fafafa;
+    }
+
+    input::placeholder {
+        color: #9e9e9e;
+        font-size: 13px;
+    }
+
+    input:focus {
+        outline: 0;
+        border-color: #1565c0;
+        background: #fff;
+        box-shadow: 0 0 0 2px rgba(21, 101, 192, .1);
+    }
+
+    .input-pendente {
+        border-color: #ffb300;
+        background: #fffde7;
+    }
+
+    .aviso {
+        display: none;
+        margin-top: 7px;
+        padding: 7px;
+        background: #fff8e1;
+        border-left: 3px solid #ffb300;
+        border-radius: 3px;
+        font-size: 9px;
+        color: #6d4c41;
+        line-height: 1.35;
+    }
+
+    .erro {
+        display: none;
+        margin-bottom: 7px;
+        padding: 8px;
+        background: #ffebee;
+        border: 1px solid #ef5350;
+        border-radius: 6px;
+        color: #b71c1c;
+        font-size: 11px;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .botoes {
+        display: flex;
+        gap: 7px;
+        margin-top: 10px;
+    }
+
+    button {
+        border: 0;
+        border-radius: 6px;
+        height: 38px;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .btn-calcular {
+        flex: 1;
+        background: #1565c0;
+        color: #fff;
+    }
+
+    .btn-calcular:hover {
+        background: #0d47a1;
+    }
+
+    .btn-relatorio {
+        width: 52px;
+        background: #eceff1;
+        color: #455a64;
+        font-size: 18px;
+    }
+
+    .titulo {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 7px;
+    }
+
+    .titulo h2 {
+        margin: 0;
+        font-size: 16px;
+        color: #1565c0;
+    }
+
+    .memoria {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11px;
+    }
+
+    .memoria th {
+        background: #1565c0;
+        color: #fff;
+        padding: 5px 4px;
+        text-align: left;
+        font-size: 10px;
+    }
+
+    .memoria th:last-child {
+        text-align: right;
+    }
+
+    .memoria td {
+        padding: 5px 4px;
+        border-bottom: 1px solid #eceff1;
+        vertical-align: middle;
+    }
+
+    .memoria td:first-child {
+        width: 24px;
+        color: #1565c0;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .memoria td:last-child {
+        text-align: right;
+        font-weight: bold;
+        white-space: nowrap;
+    }
+
+    .formula {
+        display: block;
+        color: #90a4ae;
+        font-size: 8px;
+        margin-top: 2px;
+        font-weight: normal;
+        line-height: 1.2;
+    }
+
+    .resultado {
+        margin-top: 9px;
+        padding: 9px;
+        background: #e8f5e9;
+        border: 2px solid #43a047;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .resultado-label {
+        color: #2e7d32;
+        font-size: 11px;
+        font-weight: bold;
+    }
+
+    .resultado-valor {
+        color: #1b5e20;
+        font-size: 26px;
+        font-weight: bold;
+        margin-top: 2px;
+    }
+
+    .resultado-desc {
+        color: #388e3c;
+        font-size: 9px;
+        margin-top: 2px;
+    }
+
+    .tabela {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 9px;
+        margin-top: 5px;
+    }
+
+    .tabela th {
+        background: #1565c0;
+        color: #fff;
+        padding: 4px 3px;
+        text-align: center;
+    }
+
+    .tabela td {
+        padding: 4px 3px;
+        border-bottom: 1px solid #eceff1;
+        text-align: center;
+    }
+
+    .tabela td:first-child {
+        text-align: left;
+        font-weight: bold;
+    }
+
+    .tabela tfoot td {
+        background: #e3f2fd;
+        color: #1565c0;
+        font-weight: bold;
+        border-top: 2px solid #1565c0;
+    }
+
+    .observacao {
+        margin-top: 7px;
+        padding: 7px;
+        background: #fff8e1;
+        border-left: 3px solid #ffb300;
+        border-radius: 3px;
+        font-size: 9px;
+        color: #5d4037;
+        line-height: 1.35;
+    }
+
+    .rodape {
+        text-align: center;
+        color: #90a4ae;
+        font-size: 8px;
+        line-height: 1.5;
+        padding: 5px 3px 8px;
+    }
+
+    .rodape strong {
+        color: #607d8b;
+    }
+
+    @media (min-width: 481px) {
+        body {
+            padding: 15px;
+            font-size: 14px;
+        }
+
+        .card {
+            padding: 14px;
+        }
+
+        .cabecalho h1 {
+            font-size: 24px;
+        }
+
+        .memoria {
+            font-size: 13px;
+        }
+
+        .memoria th {
+            font-size: 12px;
+        }
+
+        .tabela {
+            font-size: 10px;
+        }
+
+        .formula {
+            font-size: 9px;
+        }
+
+        .rodape {
+            font-size: 9px;
+        }
+    }
+</style></head>
 
 <body>
 <div class="container">
@@ -1128,4 +1396,3 @@ limpar();
 
 </body>
 </html>
-```
